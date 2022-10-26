@@ -1,80 +1,49 @@
-
-
-// import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
-// import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
-// import { IconButton } from "@mui/material";
-// import { useAuth } from "../context/AuthContext";
-
-// function LikeButton({ id}) {
-//   console.log("props", bookId);
-//   const { dbUsers, handleLike } = useAuth();
-//   console.log("dbUsers", dbUsers?.liked);
-
-//   const handleOnClick = () => {
-//     handleLike(bookId);
-//   };
-
-//   return (
-//     <div>
-//       <IconButton onClick={handleOnClick}>
-      //   {!dbUsers.liked && !dbUsers.liked.includes(bookId) ? (
-      //     <FavoriteOutlinedIcon color="error" />
-      //   ) : (
-      //     <FavoriteBorderOutlinedIcon />
-      //   )}
-      // </IconButton>
-//     </div>
-//   );
-// }
-
-// export default LikeButton;
-
-import React from "react";
-
 import FavoriteBorderOutlinedIcon from "@mui/icons-material/FavoriteBorderOutlined";
 import FavoriteOutlinedIcon from "@mui/icons-material/FavoriteOutlined";
 import { IconButton } from "@mui/material";
 import { useAuth } from "../context/AuthContext";
-import {  db } from "../firebase/config";
+import { db } from "../firebase/config";
 import { arrayRemove, arrayUnion, doc, updateDoc } from "firebase/firestore";
 
-export default function LikeButton({ id, likes }) {
-  const {user } = useAuth();
- console.log('user', user)
-
-  const likesRef = doc(db, "books", id);
+export default function LikeButton({ bookId }) {
+  const { user, dbUsers, getDBUsers } = useAuth();
 
   const handleLike = () => {
-    if (likes?.includes(user.uid)) {
+    const likesRef = doc(db, "users", user.uid);
+
+    if (dbUsers?.likes && !dbUsers.likes.includes(bookId)) {
       updateDoc(likesRef, {
-        likes: arrayRemove(user.uid),
-      }).then(() => {
+        likes: arrayUnion(bookId),
+      })
+        .then(() => {
+          console.log("liked");
+        })
+        .catch((e) => {
+          console.log(e);
+        });
+    } else {
+      updateDoc(likesRef, {
+        likes: arrayRemove(bookId),
+      })
+        .then(() => {
           console.log("unliked");
-      }).catch((e) => {
-            console.log(e);
-      });
-    }
-    else{
-        updateDoc(likesRef,{
-            likes:arrayUnion(user.uid)
-        }).then(() => {
-            console.log("liked");
-        }).catch((e) => {
-              console.log(e);
+        })
+        .catch((e) => {
+          console.log(e);
         });
     }
+    getDBUsers();
   };
 
-
+  console.log("dbUsers", dbUsers);
   return (
-      <div>
+    <div>
       <IconButton onClick={handleLike}>
-     !likes?includes(user.uid) ? (
+        {dbUsers?.likes && dbUsers.likes.includes(bookId) ? (
           <FavoriteOutlinedIcon color="error" />
         ) : (
           <FavoriteBorderOutlinedIcon />
-        )
-       
+        )}
       </IconButton>
     </div>
   );

@@ -1,14 +1,4 @@
-import {
-  addDoc,
-  arrayRemove,
-  arrayUnion,
-  collection,
-  doc,
-  onSnapshot,
-  query,
-  updateDoc,
-  where,
-} from "firebase/firestore";
+import { setDoc, getDoc, doc } from "firebase/firestore";
 import { auth, db } from "../firebase/config";
 import { createContext, useContext, useEffect, useState } from "react";
 import {
@@ -18,8 +8,8 @@ import {
   signOut,
 } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
-import { AsyncResource } from "async_hooks";
-import { display } from "@mui/system";
+
+//just for practicd
 
 const AuthContext = createContext<any>({});
 
@@ -38,7 +28,6 @@ export const AuthContextProvider = ({
   const [alertText2, setAlertText2] = useState<string>("");
   const [alerTxt1, setAlerTxt1] = useState<string>("");
   const [dialogTitle, setDialogTitle] = useState<string>("");
-  // const [openSnackBar, setOpenSnackBar] = useState(false);
   const [dbUsers, setDbUsers] = useState<any>(null);
   const [dbUserId, setDbUserId] = useState<string>("");
   const redirectTo = useNavigate();
@@ -49,7 +38,7 @@ export const AuthContextProvider = ({
         setUser({
           uid: user.uid,
           email: user.email,
-          displayName: user.displayName,
+          // displayName: user.displayName,
         });
       } else {
         setUser(null);
@@ -59,20 +48,16 @@ export const AuthContextProvider = ({
 
     return () => unsubscribe();
   }, []);
-  // ------------- Check if User Online / Logged in ------------- ends //
 
   // -------------  Sign Up  FB & FS) ------------- start //
-  const signup = async (email: string, password: string, fullname: string) => {
+  const signup = async (email: string, password: string) => {
     try {
       const userCredential = await createUserWithEmailAndPassword(
         auth,
         email,
         password
       );
-      insertDoc("users", {
-        authId: userCredential.user.uid,
-        email: userCredential.user.email,
-      });
+
       console.log("userCredential: ", userCredential);
     } catch (err: any) {
       if (err.message === "Firebase: Error (auth/email-already-in-use).") {
@@ -112,52 +97,26 @@ export const AuthContextProvider = ({
   const logout = async () => {
     setUser(null);
     await signOut(auth);
-    redirectTo("/");
+    redirectTo("/login");
   };
-
-  // ------------- Logout User ------------- ends //
-
-  const insertDoc = async (collect: any, data: any) => {
-    try {
-      const docRef = await addDoc(collection(db, collect), data);
-      console.log("Document written with ID: ", docRef.id);
-    } catch (e) {
-      console.error("Error adding document: ", e);
-    }
-  };
-  // // ------------- insertDoc FS ------------- ends //
-
-  //here i will check likes
-
-  // const handleLike = async (bookId: string) => {
-  //   const userRef = doc(db, "users", dbUsers.id);
-  //   console.log("dbUsers", dbUsers);
-  //   if (dbUsers.liked && !dbUsers.liked.includes(bookId)) {
-  //     await updateDoc(userRef, {
-  //       liked: arrayUnion(bookId),
-  //     });
-  //   } else {
-  //     await updateDoc(userRef, {
-  //       liked: arrayRemove(bookId),
-  //     });
-  //   }
-  //   getDBUsers();
-  // };
 
   const getDBUsers = async () => {
     try {
-      const colRef = collection(db, "users");
-      // queries
-      const q = query(colRef, where("email", "==", user && user.email));
+      const docRef = doc(db, "users", user.uid);
+      const docSnap = await getDoc(docRef);
 
-      onSnapshot(q, (snapshot) => {
-        snapshot.docs.forEach((doc) => {
-          setDbUserId(doc.id);
-          // console.log("doc.data(): ", doc.data());
-          setDbUsers({ ...doc.data(), id: doc.id });
-          // setEditedUserData({ ...doc.data(), id: doc.id });
+      if (docSnap.exists()) {
+        console.log("Document data:", docSnap.data());
+        setDbUsers({ ...docSnap.data(), id: docSnap.id });
+      } else {
+        setDoc(docRef, {
+          authId: user.uid,
+          email: user.email,
+          likes: [],
+          cart: [],
         });
-      });
+        console.log("No such document!");
+      }
     } catch (err) {
       console.log("error in updateProfile:", err);
     }
@@ -167,12 +126,6 @@ export const AuthContextProvider = ({
     if (user) getDBUsers();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
-  console.log("user", user && user);
-  console.log("openAlert: ", openAlert);
-  console.log("isEmailAlreadyExists: ", isEmailAlreadyExists);
-  console.log("UserId: ", dbUserId);
-  console.log("dbUsers", dbUsers && dbUsers);
 
   return (
     <AuthContext.Provider
@@ -189,7 +142,6 @@ export const AuthContextProvider = ({
         setAlerTxt1,
         dialogTitle,
         setDialogTitle,
-        insertDoc,
         getDBUsers,
         dbUsers,
         dbUserId,

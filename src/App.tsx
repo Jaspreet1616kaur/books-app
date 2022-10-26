@@ -1,13 +1,11 @@
 import { Route, Routes } from "react-router-dom";
 import NavBar from "./components/NavBar";
 import { AuthContextProvider } from "./context/AuthContext";
-import Contact from "./views/Contact";
-
 import Data from "./views/Data";
-
 import Insert from "./views/Insert";
 import Login from "./views/Login";
 import Register from "./views/Register";
+import WatchCartItem from "./views/WatchCartItem";
 
 function App() {
   return (
@@ -19,7 +17,7 @@ function App() {
           <Route path="/insert" element={<Insert />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="contact" element={<Contact />} />
+          <Route path="/cart" element={<WatchCartItem />} />
         </Routes>
       </AuthContextProvider>
     </div>

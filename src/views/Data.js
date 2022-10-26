@@ -1,26 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { db } from "../firebase/config";
-import { collection, getDocs } from "firebase/firestore";
-import { Container, Typography } from "@mui/material";
-
-import Card from "@mui/material/Card";
-import CardHeader from "@mui/material/CardHeader";
-import CardMedia from "@mui/material/CardMedia";
-
-// import { useNavigate } from "react-router-dom";
+import { collection, getDocs, doc, deleteDoc } from "firebase/firestore";
 import { useAuth } from "../context/AuthContext";
+import CardData from "../components/CardData";
 
-import LikeButton from "../components/LikeButton";
-
-
-
-function Data(){
-  
-  // const { id } = useNavigate();
+function Data() {
+  const { user } = useAuth();
   const [books, setBooks] = useState(null);
-
-  const {user,id , dbUserId } = useAuth();
-  console.log("dbUserId: ", dbUserId);
 
   const getBooks = async () => {
     const booksArray = [];
@@ -29,87 +15,55 @@ function Data(){
 
       querySnapshot.forEach((doc) => {
         // console.log(`${doc.id} => ${doc.data()}`);
-        console.log(doc.data());
-        booksArray.push(doc.data());
+        booksArray.push({ ...doc.data(), bookId: doc.id });
       });
-   
     } catch (error) {
       console.log("error :>> ", error);
     }
     setBooks(booksArray);
-
-
   };
 
+  //here is delete BOOKS
+  const delBook = async (dbUserId) => {
+    // console.log("dbUserId: ", dbUserId);
+    if (window.confirm("Are you sure wanted to delete that blog ?")) {
+      try {
+        await deleteDoc(doc(db, "books", dbUserId));
+        getBooks();
+        console.log("book deleted succesfully");
+      } catch (err) {
+        console.log("only you deleted your upload post  ");
+      }
+    }
+  };
 
   useEffect(() => {
     getBooks();
   }, []);
 
-
-
-
-  console.log("books :>> ", books);
-
-;
+  //#e63946
   return (
-    <div>
+    <div className="footer">
       {books &&
+        user &&
         books.map((element) => {
           console.log("element", element);
           return (
             <>
-            <Card sx={{ maxWidth: 345, marginTop: "2em" }}>
-      <CardHeader
-        title={element.title}
-        sx={{ backgroundColor: "#e63946", color: "white" }}
-      />
-      <CardMedia
-          component="img"
-          height="200"
-          image={element.image}
-          alt="game image"
-        />
-        <Container
-        sx={{
-          padding: "1em",
-          display: "flex",
-          justifyContent: "space-between",
-        }}
-      >
-      <Container>
-          <Typography variant="h5">{element.moral}</Typography>
-          <Typography paragraph>PRICE:{element.price}$</Typography>
-          <Typography paragraph>{element.author}</Typography>
-          {/* <Container>{!dbUsers && <LikeButton bookId={element.bookId} />}</Container> */}
-    
-          <Container>  <LikeButton
-           id={id} likes={element.likes} />
-       
-                   
-</Container>
-
-
-
-
-          <button type="submit" >Add to cart</button>
-        
-          </Container>
-
-
-          </Container>
-                    
-        </Card>
-            
+              <CardData
+                image={element.image}
+                author={element.author}
+                bookId={element.bookId}
+                writer={element.writer}
+                title={element.title}
+                price={element.price}
+                delBook={delBook}
+              />
             </>
           );
         })}
-      
     </div>
-    
-    
   );
 }
-
 
 export default Data;

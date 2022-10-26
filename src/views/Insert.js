@@ -2,11 +2,12 @@ import { useState } from "react";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
 import { db, storage } from "../firebase/config";
 import { v4 } from "uuid";
-
+import { useAuth } from "../context/AuthContext";
+import Button from "@mui/material/Button";
 import { collection, addDoc } from "firebase/firestore";
-
-
-
+import { useNavigate } from "react-router-dom";
+import CardHeader from "@mui/material/CardHeader";
+import { Container } from "@mui/system";
 // type DataArr = {
 //   title: string;
 //   author: string;
@@ -17,17 +18,20 @@ import { collection, addDoc } from "firebase/firestore";
 // type DatasArr = DataArr[];
 
 function Insert() {
+  const { user } = useAuth();
+  const redirectTo = useNavigate();
+
   //image upload
   const [imageUpload, setImageUpload] = useState(null);
-  console.log("IMAGEUPLOAD :>> ", imageUpload);
+
   //insert data in firebase
 
   const [contact, setContact] = useState({
     title: "",
     author: "",
-    moral: "",
     price: "",
     image: "",
+    writer: "",
   });
 
   const handeleChange = async (e) => {
@@ -39,51 +43,49 @@ function Insert() {
   const addBook = async (e) => {
     e.preventDefault();
 
-    if (imageUpload == null) {
-      return;
-    }
-    const imageRef = ref(storage, `book-images/${imageUpload.name + v4()}`);
-    uploadBytes(imageRef, imageUpload).then((res) => {
-      console.log("res", res);
-      getDownloadURL(res.ref).then((url) => setImageUpload(url));
-      alert("image uploaded");
-    });
-
-    console.log("upload in firestore");
-    console.log("IMAGEUPLOAD :>> ", imageUpload);
-
-    const newContact = {
-      ...contact,
-      image: imageUpload,
-      id: Math.random()
-    };
-
     try {
-      const docRef = await addDoc(collection(db, "books"), newContact);
+      if (imageUpload == null) {
+        console.log("please upload Image");
 
-      console.log("Document written with ID: ", docRef.id);
+        return;
+      } else {
+        const imageRef = ref(storage, `book-images/${imageUpload.name + v4()}`);
+        uploadBytes(imageRef, imageUpload).then((res) => {
+          getDownloadURL(res.ref).then((url) => {
+            console.log("upload in firestore");
+            const newContact = {
+              ...contact,
+              author: user.uid,
+              image: url,
+              id: Math.random(),
+            };
+
+            const docRef = addDoc(collection(db, "books"), newContact);
+            redirectTo("/");
+            console.log("Document written with ID: ", docRef.id);
+          });
+        });
+      }
     } catch (e) {
       console.error("Error adding document: ", e);
     }
   };
 
   return (
+    <div className="border p-8 mt-8 bg-light" style={{ height: "500" }}>
+      <>
+        <CardHeader sx={{ backgroundColor: "#e63946", color: "white" }} />
+        <Container>
+          <div>
+            <label htmlFor="">Image</label>
 
-
-    <div className="border p-3 mt-3 bg-light" style={{ position: "fixed" }}>
-
-<>
-<div>
-
- <label htmlFor="">Image</label>
-
-      <input
-          type="file"
-          onChange={(e) => {
-             setImageUpload(e.target.files[0])
-        }}
-      />
-        </div> 
+            <input
+              type="file"
+              onChange={(e) => {
+                setImageUpload(e.target.files[0]);
+              }}
+            />
+          </div>
 
           <h2>Add Book</h2>
 
@@ -94,39 +96,40 @@ function Insert() {
               name="title"
               className="form-control"
               value={contact.title}
-              onChange={ handeleChange}
+              onChange={handeleChange}
             />
           </div>
 
-<div>
-          <label htmlFor="">price</label>
+          <div>
+            <label htmlFor="">price</label>
 
-          <input
-          type="text"
-          name="price"
-          value={contact.price}
-          onChange={handeleChange}
-          placeholder="price"
-        />
-        </div>
+            <input
+              type="text"
+              name="price"
+              value={contact.price}
+              onChange={handeleChange}
+              placeholder="price"
+            />
+          </div>
 
-        <div>
-        <label htmlFor="">Author</label>
-<input
-          type="text"
-          name="moral"
-          value={contact.moral}
-          onChange={handeleChange}
-          placeholder="moral"
-        />
-      <button onClick={addBook}>Submit</button>
+          <div>
+            <label htmlFor="">writer</label>
+            <input
+              type="text"
+              name="writer"
+              value={contact.writer}
+              onChange={handeleChange}
+              placeholder="writer"
+            />
 
-      </div>
-
+            <button onClick={addBook}>Submit</button>
+          </div>
+          <Button color="warning" href="/">
+            go to back Home
+          </Button>
+        </Container>
       </>
-
-</div>
-
- )
+    </div>
+  );
 }
 export default Insert;

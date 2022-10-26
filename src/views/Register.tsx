@@ -1,5 +1,5 @@
 // export default Register;
-import React, { useContext, useEffect, useState } from "react";
+import { useState } from "react";
 
 import AlertDialogSlide from "../context/AlertDialogSlide";
 
@@ -11,14 +11,14 @@ const Register = () => {
   const [data, setData] = useState({
     email: "",
     password: "",
-    fullname: "",
+    displayName: "",
   });
   const redirectTo = useNavigate();
 
   const handleSignup = async (e: any) => {
     e.preventDefault();
     try {
-      await signup(data.email, data.password, data.fullname);
+      await signup(data.email, data.password, data.displayName);
       redirectTo("login");
     } catch (err) {
       console.log("error in handleSignup:", err);
@@ -40,10 +40,10 @@ const Register = () => {
           onChange={(e: any) =>
             setData({
               ...data,
-              fullname: e.target.value,
+              displayName: e.target.value,
             })
           }
-          value={data.fullname}
+          value={data.displayName}
           required
           type="fullname"
           placeholder="Enter fullname"

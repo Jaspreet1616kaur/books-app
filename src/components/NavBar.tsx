@@ -4,48 +4,52 @@ import Box from "@mui/material/Box";
 import Toolbar from "@mui/material/Toolbar";
 import Typography from "@mui/material/Typography";
 import Button from "@mui/material/Button";
-import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+import Badge from "@mui/material/Badge";
+import ShoppingBasket from "@mui/icons-material/ShoppingBasket";
 
 export default function NavBar() {
-  const { logout, user } = useAuth();
-  console.log("dbUsersNavbar: ", user);
+  const { logout, user, dbUsers } = useAuth();
+  console.log("test");
   return (
     <Box sx={{ flexGrow: 1 }}>
-      <AppBar position="static">
+      <AppBar position="static" sx={{ background: "#e63946" }}>
         <Toolbar>
-          <IconButton
-            size="large"
-            edge="start"
-            color="primary"
-            aria-label="menu"
-            sx={{ mr: 2 }}
-          >
-            <MenuIcon />
-          </IconButton>
           <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            BOOKS
+            {/* <Button color="inherit" href="/"> */}
+            <h2 style={{ color: "black" }}>Historical BOOKS</h2>
+            {/* </Button> */}
           </Typography>
 
+          {!user && (
+            <>
+              <Button color="inherit" href="/login">
+                <h3 style={{ color: "black" }}>Login</h3>
+                {/* <Link to="/login">Login</Link> */}
+              </Button>
+              <Button color="inherit" href="/register">
+                <h3 style={{ color: "black" }}>SIGNUP</h3>
+                {/* <Link to="/register">SIGNUP</Link> */}
+              </Button>
+            </>
+          )}
+          {dbUsers && (
+            <Link to="/cart">
+              <Badge badgeContent={dbUsers.cart.length} color="primary">
+                <ShoppingBasket color="action" />
+              </Badge>
+            </Link>
+          )}
+
           {user && (
-            <Button color="inherit">
-              <Link to="/login">Login</Link>
+            <Button color="inherit" href="/insert">
+              <h3 style={{ color: "black" }}>Insert</h3>
             </Button>
           )}
-          <Button color="inherit">
-            {" "}
-            <Link to="/register">SIGNUP</Link>
-          </Button>
-          <Button color="inherit">
-            {" "}
-            <Link to="/Insert">INSERT</Link>
-          </Button>
           {user && (
             <Button onClick={logout} color="inherit">
-              {" "}
-              Logout
+              <h3 style={{ color: "black" }}>Logout</h3>
             </Button>
           )}
         </Toolbar>

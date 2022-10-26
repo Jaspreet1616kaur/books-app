@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import { useState } from "react";
 
 import { useAuth } from "../context/AuthContext";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import AlertDialogSlide from "../context/AlertDialogSlide";
 
 const Login = () => {
@@ -31,7 +31,8 @@ const Login = () => {
         margin: "30px auto",
       }}
     >
-      <h1 className="text-center my-3 ">Login</h1>
+      <h2>Log in:</h2>
+
       <form onSubmit={handleLogin}>
         <label>Email address</label>
         <input
@@ -60,13 +61,28 @@ const Login = () => {
           type="password"
           placeholder="Password"
         />
+
         <button type="submit">Login</button>
       </form>
+
       <AlertDialogSlide
         dialogTitle="Allert"
         text1={alerTxt1}
         buttonTxt1={"Close"}
       />
+      <p>
+        Don't have an account yet?{" "}
+        <Link
+          to="/register"
+          style={{
+            textDecoration: "none",
+            color: "9a031e",
+            fontWeight: "bold",
+          }}
+        >
+          <span> Register here</span>
+        </Link>
+      </p>
     </div>
   );
 };
